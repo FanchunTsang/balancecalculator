@@ -25,19 +25,19 @@ public class BalanceCalculator {
 
     public static void main(String[] args) {
         while (true) {
-            System.out.println("Please type [start] or [quit]");
-            Scanner sc = new Scanner(System.in);
-            String begin = sc.next();
+            print("Please type [start] or [quit]");
+            Scanner sc1 = new Scanner(System.in);
+            String begin = sc1.next();
             if (START.equals(begin)) {
-                System.out.println("Do you have the initial file? type [yes] or [no]");
-                String initFileAnswer = sc.next();
+                print("Do you have the initial file? type [yes] or [no]");
+                String initFileAnswer = sc1.next();
                 if (YES.equals(initFileAnswer)) {
-                    System.out.println("Please enter the file path: ");
-                    String path = sc.next();
-                    System.out.println(path);
+                    print("Please enter the file path: ");
+                    String path = sc1.next();
+                    print(path);
                     String fileString = FileUtil.readFile(path);
                     if (null == fileString || "".equals(fileString)) {
-                        System.out.println("Wrong file path or wrong format");
+                        print("Wrong file path or wrong format");
                         continue;
                     }
                     payments = FileUtil.initData(fileString);
@@ -46,19 +46,22 @@ public class BalanceCalculator {
                 }
                 outputTask();
                 while (true) {
-                    System.out.println("Please enter a currency, an amount and followed by hitting the enter key");
-                    System.out.println("Or you can type quit to exit");
-                    String paymentIn = sc.nextLine();
+                    print("Please enter a currency, an amount and followed by hitting the enter key");
+                    print("Or you can type quit to exit");
+                    Scanner sc2 = new Scanner(System.in);
+                    String paymentIn = sc2.nextLine();
                     if (QUIT.equals(paymentIn)) {
+                        timer.cancel();
                         return;
                     }
                     if (!validPaymentFormat(paymentIn)) {
-                        System.out.println("wrong format");
+                        print("wrong format");
                         continue;
                     }
                     addPayment(paymentIn);
                 }
             } else if (QUIT.equals(begin)) {
+                timer.cancel();
                 return;
             }
         }
@@ -67,20 +70,9 @@ public class BalanceCalculator {
     private static void outputTask() {
         timer.schedule(new TimerTask() {
             public void run() {
-                if (null != payments && !payments.isEmpty()) {
-                    System.out.println("---------------------- payments output begin ----------------------");
-                    for (Map.Entry<String, Double> entry : payments.entrySet()) {
-                        String mapKey = entry.getKey();
-                        Double mapValue = entry.getValue();
-                        if (0.0 != mapValue) {
-                            String usdAmount = getUsdRate(mapKey, mapValue);
-                            System.out.println(mapKey + "：" + mapValue + " " + usdAmount);
-                        }
-                    }
-                    System.out.println("---------------------- payments output end ----------------------");
-                }
+                printPayments();
             }
-        }, 10000, 10000);
+        }, 10000, 60000);
     }
 
     private static boolean validPaymentFormat(String input) {
@@ -108,13 +100,35 @@ public class BalanceCalculator {
     }
 
     private static String getUsdRate(String from, Double amount) {
-        Double result = CurrencyUtil.getCurrency(from, USD);
-        if (null != result) {
-            BigDecimal bdResult = BigDecimal.valueOf(result);
-            BigDecimal bdAmount = BigDecimal.valueOf(amount);
-            String usdAmount = bdAmount.multiply(bdResult).setScale(2, RoundingMode.HALF_UP).toString();
-            return "(USD " + usdAmount + ")";
+        if (USD.equals(from)) {
+            Double result = CurrencyUtil.getCurrency(from, USD);
+            if (null != result) {
+                BigDecimal bdResult = BigDecimal.valueOf(result);
+                BigDecimal bdAmount = BigDecimal.valueOf(amount);
+                String usdAmount = bdAmount.multiply(bdResult).setScale(2, RoundingMode.HALF_UP).toString();
+                return "(USD " + usdAmount + ")";
+            }
         }
         return "";
+    }
+
+    private static void printPayments() {
+        if (null != payments && !payments.isEmpty()) {
+            print("---------------------- payments output begin ----------------------");
+            for (Map.Entry<String, Double> entry : payments.entrySet()) {
+                String mapKey = entry.getKey();
+                Double mapValue = entry.getValue();
+                if (0.0 != mapValue) {
+                    String usdAmount = getUsdRate(mapKey, mapValue);
+                    print(mapKey + "：" + mapValue + " " + usdAmount);
+                }
+            }
+            print("---------------------- payments output end ----------------------");
+        }
+    }
+
+    private static void print(String msg) {
+        System.out.println(msg);
+        System.out.print("\n");
     }
 }
