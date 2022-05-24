@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,10 +17,12 @@ import java.util.regex.Pattern;
  * 2022/5/23 下午 10:17
  **/
 public class FileUtil {
+    private FileUtil() {}
+
     private static final Logger logger = Logger.getLogger("FileUtil");
 
     public static Map<String, Double> initData(String fileString) {
-        Map<String, Double> dataMap = new HashMap<>();
+        Map<String, Double> dataMap = new ConcurrentHashMap<>();
         List<String> dataList = Arrays.asList(fileString.split(","));
         if (!dataList.isEmpty()) {
             dataList.forEach(data -> {

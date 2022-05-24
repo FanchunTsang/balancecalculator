@@ -6,6 +6,7 @@ import com.zengfanjun.util.FileUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * BalanceCalculator
@@ -20,8 +21,8 @@ public class BalanceCalculator {
     private static final String YES = "yes";
     private static final String USD = "USD";
     private static Map<String, Double> payments;
-    private static Timer timer = new Timer();
-    private static List<String> currencyList = CurrencyUtil.getExchangeRateList();
+    private static final Timer timer = new Timer();
+    private static final List<String> currencyList = CurrencyUtil.getExchangeRateList();
 
     public static void main(String[] args) {
         while (true) {
@@ -42,7 +43,7 @@ public class BalanceCalculator {
                     }
                     payments = FileUtil.initData(fileString);
                 } else {
-                    payments = new HashMap<>();
+                    payments = new ConcurrentHashMap<>();
                 }
                 outputTask();
                 while (true) {
@@ -59,6 +60,7 @@ public class BalanceCalculator {
                         continue;
                     }
                     addPayment(paymentIn);
+                    print("payment received");
                 }
             } else if (QUIT.equals(begin)) {
                 timer.cancel();
@@ -85,7 +87,7 @@ public class BalanceCalculator {
             return false;
         }
         String currency = payment[0];
-        return null == currencyList || currencyList.isEmpty() || currencyList.contains(currency);
+        return currencyList.isEmpty() || currencyList.contains(currency);
     }
 
     private static void addPayment(String input) {
@@ -100,7 +102,7 @@ public class BalanceCalculator {
     }
 
     private static String getUsdRate(String from, Double amount) {
-        if (USD.equals(from)) {
+        if (!USD.equals(from)) {
             Double result = CurrencyUtil.getCurrency(from, USD);
             if (null != result) {
                 BigDecimal bdResult = BigDecimal.valueOf(result);

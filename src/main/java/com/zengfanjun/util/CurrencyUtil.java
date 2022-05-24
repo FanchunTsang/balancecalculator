@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  * 2022/5/23 下午 8:46
  **/
 public class CurrencyUtil {
+    private CurrencyUtil() {}
     private static final Logger logger = Logger.getLogger("HttpRequestUtil");
     private static final String APP_ID = "rtnvfpgghwx1h1pb";
     private static final String APP_SECRET = "NG12MHQybEh2YXl1R3RJT0xELzRsQT09";
